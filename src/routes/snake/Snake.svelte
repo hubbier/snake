@@ -29,11 +29,27 @@
 		y: 0
 	});
 
+	let snake = $state(new Map<string, boolean>());
+
+	let length = $state(1);
+
 	function generateFood() {
-		return {
-			x: Math.floor(Math.random() * width),
-			y: Math.floor(Math.random() * width)
-		};
+		let j = Math.floor(Math.random() * width * width);
+		let i = 0;
+		let x = 0;
+		let y = 0;
+		while (i < j) {
+			if (!snake.get(`${y}_${x}`)) {
+				i++;
+			}
+			if (x + 1 === width) {
+				y += 1;
+			}
+			x = (x + 1) % width;
+		}
+		console.log(`placing food at row ${y} column ${x}`);
+
+		return { x, y };
 	}
 
 	let food: Coordinate = $state(generateFood());
@@ -49,10 +65,20 @@
 		// let newGrid = Array<Cell[]>(width).fill(Array<Cell>(width).fill({ on: false }));
 		// paint the snake
 		let current: SnakeSegment | undefined = head;
-		do {
+		while (current) {
+			if (!newGrid[current.y]) {
+				let pause = 'pause';
+			}
 			newGrid[current.y][current.x].hasSnakeSegment = true;
 			current = current.next;
-		} while (current);
+		}
+		// do {
+		// 	if (!newGrid[current.y]) {
+		// 		let pause = 'pause';
+		// 	}
+		// 	newGrid[current.y][current.x].hasSnakeSegment = true;
+		// 	current = current.next;
+		// } while (current);
 
 		newGrid[food.y][food.x].hasFood = true;
 
@@ -94,14 +120,17 @@
 			next: head
 		};
 		head = newHead;
+		snake.set(`${head.y}_${head.x}`, true);
 
 		if (head.x == food.x && head.y == food.y) {
 			food = generateFood();
+			length++;
 		} else {
 			let current = head;
 			while (current?.next?.next) {
 				current = current.next;
 			}
+			snake.set(`${current?.next?.y}_${current?.next?.x}`, false);
 			current.next = undefined;
 		}
 
